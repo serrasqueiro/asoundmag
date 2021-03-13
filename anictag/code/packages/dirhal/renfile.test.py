@@ -28,8 +28,9 @@ def module_test(args: list) -> bool:
         param = ['.']
     for adir in param:
         if pat == "mp-rename":
+            #is_ok = renfile.hardcoded_top_rename(adir, r"(\d\d)\. (.+)", debug=1)
             is_ok = renfile.hardcoded_top_rename(adir, debug=1)
-            print("renfile.hardcoded_top_rename() returned", is_ok)
+            print("renfile.hardcoded_top_rename() returned", is_ok, "; path:", adir)
             continue
         print("Unknown 'pat':", pat)
         tdir = dirscan.Folder(adir, exts=exts)
