@@ -24,6 +24,7 @@ def hardcoded_top_rename_at(adir, pattern="", debug=0) -> str:
 	@s	Single file, no renaming done
 	@d	If rename occurred, duplicates would exist
 	@q	User did quit of renaming (only when debug=1)
+	@L	At least one soft-link found (panic), quits!
     """
     assert int(debug) >= 0, "Wrong debug"
     tdir = dirscan.Folder(adir, exts=(".mp3",))
@@ -32,6 +33,10 @@ def hardcoded_top_rename_at(adir, pattern="", debug=0) -> str:
         return "@!"
     if len(files) <= 1:
         return "@s"	# single file
+    # If any soft-link is found, simply bail out and return "@L"
+    for _, elem, _ in tdir.entries():
+        if elem.is_symlink():
+            return "@L"
     alist, other = list(), ""
     dest = dict()
     if not pattern:

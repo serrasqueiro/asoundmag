@@ -65,6 +65,11 @@ class Folder(DirHandler):
         self._dirs = [name for name, elem, _ in self._entries if elem.is_dir()]
         return True
 
+    def entries(self) -> list:
+        """ Returns the list of triplets: (name, scandir-entry, status)
+        """
+        return self._entries
+
     def build_str(self) -> str:
         """ Build string from path list """
         return self._str_path_list.join(self.dirs() + self.files())
