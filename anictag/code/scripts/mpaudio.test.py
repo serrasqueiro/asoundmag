@@ -73,6 +73,9 @@ def show_id3_tags(fname, exclude_tags) -> bool:
         newstr = "[skipped]" if skip else item.pprint()
         shown = char_map.simpler_ascii(newstr, 1)
         print("akey:", type(item), akey, shown)
+        unused_tags = aud.tag_unused()
+        if unused_tags:
+            print("Unused tags (Latin-1 approximation):", [tag for tag, _ in unused_tags])
     return True
 
 if __name__ == '__main__':

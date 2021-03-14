@@ -7,8 +7,19 @@ mpaudio module: a wrapper for 'mutagen' mp3
 
 import mutagen.mp3
 from mutagen.mp3 import MP3
+import dirhal.util as util
 import func.id3tag as id3tag
+from waxpage.redit import char_map
 
+AUDIO_EXTS = (
+    ".mp3",
+    ".mpa",
+    ".mp4",
+    ".mp2",
+    ".wav", ".wv", ".flac", ".ape",
+    ".ogg",
+    ".au",
+)
 
 class ID3v2():
     """ Abstract class to hold generic ID3v2 (or ID3v1) info
@@ -57,7 +68,12 @@ class Audio(ID3v2):
         return self._ids is not None
 
     def tag_ids(self):
+        """ Returns id3v2 (or id3v1) tags """
         return self._ids["id3v2"]
+
+    def tag_unused(self) -> list:
+        """ Returns the unused tags """
+        return self._ids["id3v2:out"]
 
     def reharse(self) -> bool:
         if not self._obj:
@@ -66,6 +82,8 @@ class Audio(ID3v2):
         return True
 
     def _parse_mp3obj(self, fname) -> bool:
+        if not plausible_audio(fname):
+            return False
         try:
             obj = MP3(fname)
         except mutagen.mp3.HeaderNotFoundError:
@@ -78,9 +96,14 @@ class Audio(ID3v2):
         dct = {
             "@id3v2": valid_id3v2(tags),
             "id3v2": dict(),
+            "id3v2:out": list(),
             }
         for akey in tags:
             if self.is_excluded(akey):
+                continue
+            ukey = char_map.simpler_ascii(akey, 1) # Latin-1 conversion
+            if ukey != akey:
+                dct["id3v2:out"].append((ukey, akey))
                 continue
             dct["id3v2"][akey] = tags[akey]
         return dct
@@ -107,6 +130,17 @@ def str_within(bigstr: str, within: tuple) -> str:
             return astr
     return ""
 
+def plausible_audio(path, check_ext=True) -> bool:
+    if not util.maybe_audio(path):
+        return False
+    if not check_ext:
+        return True
+    sname = path.lower()
+    for ext in AUDIO_EXTS:
+        assert ext[0] == ".", "An extension must start with '.'"
+        if sname.endswith(ext):
+            return True
+    return False
 
 # Please include me...
 if __name__ == '__main__':

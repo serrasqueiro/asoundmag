@@ -5,6 +5,10 @@ Utilities module: OS independent functions
 
 import os.path
 
+def maybe_audio(path) -> str:
+    """ Returns True if file at path may be an audio file. """
+    return os.path.isfile(path)
+
 def clean_path(path) -> str:
     """ Returns a cleaner path """
     if not isinstance(path, str):
