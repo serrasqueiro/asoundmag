@@ -52,6 +52,10 @@ class Audio(ID3v2):
             return 1
         return msec
 
+    def has_tag_ids(self):
+        """ Returns True if this object has tags """
+        return self._ids is not None
+
     def tag_ids(self):
         return self._ids["id3v2"]
 
@@ -87,5 +91,23 @@ def valid_id3v2(id3tags) -> bool:
     is_ok = id3tags.get("TPE1") is not None
     return is_ok
 
+def tag_str_within(tagkey: str, within: tuple) -> str:
+    """ Returns a non-empty string if any 'within' is at start of 'tagkey'. """
+    assert isinstance(tagkey, str), "tagkey is expected to be a string"
+    return str_within(tagkey, within)
+
+def str_within(bigstr: str, within: tuple) -> str:
+    """ Returns a non-empty string if any 'within' is at start of 'bigstr'. """
+    if not within:
+        return ""
+    for astr in within:
+        if not astr:
+            continue
+        if bigstr.startswith(astr):
+            return astr
+    return ""
+
+
+# Please include me...
 if __name__ == '__main__':
     print("Please import dirhal.mpaudio")
