@@ -10,11 +10,11 @@ import dirhal.dirscan as dirscan
 
 def main():
     """ Main script! """
-    main_test()
+    main_test(sys.argv[1:])
 
-def main_test():
+def main_test(args: list):
     """ Main module test. """
-    is_ok = module_test(sys.argv[1:])
+    is_ok = module_test(args)
     assert is_ok
 
 def module_test(args: list) -> bool:

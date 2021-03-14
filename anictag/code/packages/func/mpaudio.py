@@ -5,29 +5,9 @@ mpaudio module: a wrapper for 'mutagen' mp3
 
 # pylint: disable=missing-function-docstring
 
-import dirhal.id3tag as id3tag
 import mutagen.mp3
 from mutagen.mp3 import MP3
-
-
-def sample() -> bool:
-    """ Small sample for tests.
-    """
-    # pylint: disable=import-outside-toplevel
-    import sys
-    fname = sys.argv[1]
-    aud = Audio(fname)
-    is_ok = aud.tag_ids() is not None
-    print("Time (seconds):", aud.seconds(), is_ok)
-    if not is_ok:
-        return False
-    for akey in sorted(aud.tag_ids()):
-        if akey.startswith("@"):
-            continue
-        item = aud.tag_ids()[akey]
-        shown = item.pprint()
-        print("akey:", type(item), akey, shown)
-    return True
+import func.id3tag as id3tag
 
 
 class ID3v2():
@@ -73,7 +53,7 @@ class Audio(ID3v2):
         return msec
 
     def tag_ids(self):
-        return self._ids
+        return self._ids["id3v2"]
 
     def reharse(self) -> bool:
         if not self._obj:
@@ -88,20 +68,24 @@ class Audio(ID3v2):
             return False
         self._obj = obj
         self._millis = obj.info.length
-        print("MILLS", obj.info.length, self._millis)
         return True
 
     def _convert_to_ids(self, tags) -> dict:
         dct = {
-            "@idv3": True,
+            "@id3v2": valid_id3v2(tags),
+            "id3v2": dict(),
             }
         for akey in tags:
             if self.is_excluded(akey):
                 continue
-            dct[akey] = tags[akey]
+            dct["id3v2"][akey] = tags[akey]
         return dct
 
+def valid_id3v2(id3tags) -> bool:
+    """ Returns True if 'id3tags' seems to be a valid MP3 ID3v2 tag """
+    # We simply check if "TPE1" exists
+    is_ok = id3tags.get("TPE1") is not None
+    return is_ok
 
 if __name__ == '__main__':
     print("Please import dirhal.mpaudio")
-    sample()
