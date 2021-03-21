@@ -15,8 +15,8 @@ class NameOf():
     def is_one_of(self) -> bool:
         """ Returns True if matches expression """
         match = self._one_of(self._name, self._exps)
-        return not not match
-    
+        return bool(match)
+
     def _one_of(self, astr, rexps):
         """ Returns True if 'astr' matches one of regular expressions """
         for rexp in rexps:

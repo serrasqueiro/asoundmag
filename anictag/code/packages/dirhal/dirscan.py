@@ -45,8 +45,7 @@ class Folder(DirHandler):
 
     def rescan(self) -> bool:
         """ Re-scan directory """
-        self._scan(True)
-        return True
+        return self._scan(True)
 
     def _scan(self, new) -> bool:
         """ Scan files on directory """
