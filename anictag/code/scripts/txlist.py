@@ -75,9 +75,9 @@ def runner(out, err, args) -> int:
 def check(out, err, txc_files, opts) -> int:
     """ Check TXC file content with URLs, and local directory """
     result = 0
-    #verbose = opts["verbose"]
+    verbose = opts["verbose"]
     apath = opts["dir"]
-    #paths = recurse_dirs(apath, opts["excl"])
+    paths = recurse_dirs(apath, opts["excl"])
     if opts["dump"]:
         for path in paths:
             print(path)
@@ -91,21 +91,32 @@ def check(out, err, txc_files, opts) -> int:
             print(f"TXC file not parsed: {fname}")
             print("msg:", tfile.msg)
             return 3
-        code, msg = check_context(tfile, apath)
+        code, msg = check_context(tfile, (apath, paths), verbose)
         if msg:
-            print("Warn:", msg)
+            print(f"Warn, bogus:{fname}:", msg)
+        if code != 0:
+            return code
     return 0
 
 
-def check_context(tfile, apath, debug=0) -> tuple:
+def check_context(tfile, inputs, debug=0) -> tuple:
+    """ Check if all stuff is there at 'inputs'.
+    """
+    _, paths = inputs
+    there = [astr.strip() for astr in paths]
     if debug > 0:
         for node in tfile.nodes:
             print("NODE:", node.kind, node.lines)
     items = [(node.lines[0], node.lines[1:]) for node in tfile.nodes if node.kind == "item"]
     for item, tups in items:
         shown = [urlutil.unquote(tups[0])] + [tups[1:]]
+        if item.startswith("@"):
+            continue
         if debug > 0:
             print("Debug:", "ITEM:", item, shown)
+        if not item in there:
+            print("Not found:", item)
+            return 4, item
     return 0, None
 
 
