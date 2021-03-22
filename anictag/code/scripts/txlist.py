@@ -8,6 +8,7 @@ Checks txc references with real path.
 
 
 import sys
+import urllib.parse
 import dirhal.dirscan as dirscan
 import aurl.urlutil as urlutil
 from waxpage.txc import FileTXC
@@ -35,7 +36,7 @@ Options are:
     sys.exit(code if code else 0)
 
 
-def runner(out, err, args) -> int:
+def runner(out, err, args):
     """ Basic run """
     verbose = 0
     do_dump = False
@@ -95,13 +96,14 @@ def check(out, err, txc_files, opts) -> int:
         if msg:
             print(f"Warn, bogus:{fname}:", msg)
         if code != 0:
-            return code
-    return 0
+            result = code
+    return result
 
 
 def check_context(tfile, inputs, debug=0) -> tuple:
     """ Check if all stuff is there at 'inputs'.
     """
+    dirs = dict()
     _, paths = inputs
     there = [astr.strip() for astr in paths]
     if debug > 0:
@@ -109,14 +111,29 @@ def check_context(tfile, inputs, debug=0) -> tuple:
             print("NODE:", node.kind, node.lines)
     items = [(node.lines[0], node.lines[1:]) for node in tfile.nodes if node.kind == "item"]
     for item, tups in items:
-        shown = [urlutil.unquote(tups[0])] + [tups[1:]]
+        url = urlutil.unquote(tups[0])
+        shown = [[url] + [tups[1:]]]
         if item.startswith("@"):
             continue
+        where = urlutil.urlparse(url)
+        query_list = urlutil.onedrive_style(where.query)
         if debug > 0:
             print("Debug:", "ITEM:", item, shown)
+            print("\t>", query_list)
         if not item in there:
             print("Not found:", item)
             return 4, item
+        _, idstr, adict = query_list
+        parent = adict['par-id'] if idstr else ""
+        shown = f", parent='{parent}'" if idstr else ""
+        print(item, f"idstr='{idstr}'{shown}")
+        if idstr:
+            if parent in dirs:
+                dirs[parent].append(item)
+            else:
+                dirs[parent] = [item]
+    for parent in sorted(dirs):
+        print("#dir:", parent, dirs[parent])
     return 0, None
 
 
