@@ -3,6 +3,8 @@
 Wrapper for regular expressions on filenames
 """
 
+# pylint: disable=no-self-use
+
 import re
 
 class NameOf():
